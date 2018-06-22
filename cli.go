@@ -8,6 +8,7 @@ import (
   "github.com/aws/aws-sdk-go/service/secretsmanager"
   "encoding/json"
   "os/exec"
+  "io"
   // "bytes"
 )
 
@@ -27,6 +28,25 @@ func map_to_equal_string(m map[string]string) []string {
     }
     return ret
 }
+
+func printOutput(w io.Writer, r io.Reader) error {
+	buf := make([]byte, 1024, 1024)
+	for {
+		n, err := r.Read(buf[:])
+		if n > 0 {
+			_, err = w.Write(buf[:n])
+		}
+    if err == io.EOF {
+      return nil
+    } else if err != nil {
+			return err
+		}
+	}
+	// never reached
+	panic(true)
+	return nil
+}
+
 
 func RunScript(config Config, command []string) error {
   path := config.secret_path
@@ -69,14 +89,26 @@ func RunScript(config Config, command []string) error {
   }
 
   cmd := exec.Command(command[0], command[1:]...)
-  cmd.Env = os.Environ()
-   cmd.Env = append(os.Environ(), map_to_equal_string(f)...)
-  cmd_output, err := cmd.Output()
+  cmd.Env = append(os.Environ(), map_to_equal_string(f)...)
+
+	stdout, _ := cmd.StdoutPipe()
+	stderr, _ := cmd.StderrPipe()
+	cmd.Start()
+
+	go func() {
+		 printOutput(os.Stdout, stdout)
+	}()
+
+	go func() {
+		printOutput(os.Stderr, stderr)
+	}()
+
+  err = cmd.Wait()
+
   if err != nil {
-      fmt.Println(err.Error())
-     return err
+    fmt.Println(err.Error())
+    return err
   }
-  fmt.Println(string(cmd_output))
 
   return nil
 }
