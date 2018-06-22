@@ -9,13 +9,21 @@ import (
 
 func main() {
   var secret_path string
+  // var region string
+  var config Config
+
 	app := cli.NewApp()
 
   app.Flags = []cli.Flag {
     cli.StringFlag{
       Name:        "secret, s",
-      Usage:       "Path to your secrets entry",
+      Usage:       "Secrets Manager entry",
       Destination: &secret_path,
+    },
+    cli.StringFlag{
+      Name:        "region, r",
+      Usage:       "AWS region",
+      Destination: &config.region,
     },
   }
 
