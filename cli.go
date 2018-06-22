@@ -28,7 +28,8 @@ func map_to_equal_string(m map[string]string) []string {
     return ret
 }
 
-func RunScript(path string, command []string) error {
+func RunScript(config  Config, command []string) error {
+  path := config.secret_paths[0]
   if DEBUG {
     fmt.Println(path)
     for _, x := range command {

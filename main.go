@@ -5,20 +5,22 @@ import (
   "log"
   "github.com/urfave/cli"
   "errors"
+  "fmt"
 )
 
 func main() {
-  var secret_path string
+  // var secret_path string
   // var region string
   var config Config
+  var secrets *cli.StringSlice
 
 	app := cli.NewApp()
 
   app.Flags = []cli.Flag {
-    cli.StringFlag{
+    cli.StringSliceFlag{
       Name:        "secret, s",
       Usage:       "Secrets Manager entry",
-      Destination: &secret_path,
+      Value:       secrets,
     },
     cli.StringFlag{
       Name:        "region, r",
@@ -27,12 +29,14 @@ func main() {
     },
   }
 
+  fmt.Println(secrets)
+
   app.Action = func(c *cli.Context) error {
-    if len(secret_path) == 0 {
+    if len(config.secret_paths) == 0 {
       return errors.New("Must specify secret with `-s`")
     }
     // c.Args() contains [script, to, run]
-    RunScript(secret_path, c.Args())
+    RunScript(config, c.Args())
     return nil
   }
 
