@@ -8,17 +8,14 @@ import (
 )
 
 func main() {
-  var secret_path string
-  // var region string
   var config Config
-
 	app := cli.NewApp()
 
   app.Flags = []cli.Flag {
     cli.StringFlag{
       Name:        "secret, s",
       Usage:       "Secrets Manager entry",
-      Destination: &secret_path,
+      Destination: &config.secret_path,
     },
     cli.StringFlag{
       Name:        "region, r",
@@ -28,11 +25,11 @@ func main() {
   }
 
   app.Action = func(c *cli.Context) error {
-    if len(secret_path) == 0 {
+    if len(config.secret_path) == 0 {
       return errors.New("Must specify secret with `-s`")
     }
     // c.Args() contains [script, to, run]
-    RunScript(secret_path, c.Args())
+    RunScript(config, c.Args())
     return nil
   }
 
