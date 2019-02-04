@@ -18,11 +18,11 @@ func map_to_equal_string(m map[string]string) []string {
 }
 
 func RunScript(config Config, command []string) error {
-  var secrets_json map[string]string
+  var secrets map[string]string
 
   // Grab env vars from Secrets Manager
-  sess := config.SmSession()
-  svc := secretsmanager.New(sess)
+  session := config.SmSession()
+  svc := secretsmanager.New(session)
   input := config.SmInput()
   result, err := svc.GetSecretValue(input)
   if err != nil {
@@ -31,7 +31,7 @@ func RunScript(config Config, command []string) error {
   }
 
   // Massage resulting string
-  err = json.Unmarshal([]byte(*result.SecretString), &secrets_json)
+  err = json.Unmarshal([]byte(*result.SecretString), &secrets)
   if err != nil {
     fmt.Println(err.Error())
     return err
@@ -39,7 +39,7 @@ func RunScript(config Config, command []string) error {
 
   // Run command in a subprocess
   cmd := exec.Command(command[0], command[1:]...)
-  cmd.Env = append(os.Environ(), map_to_equal_string(secrets_json)...)
+  cmd.Env = append(os.Environ(), map_to_equal_string(secrets)...)
   cmd.Stdin = os.Stdin
   cmd.Stdout = os.Stdout
   cmd.Stderr = os.Stderr

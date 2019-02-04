@@ -28,6 +28,9 @@ func main() {
     if len(config.secret_path) == 0 {
       return errors.New("Must specify secret with `-s`")
     }
+    if len(c.Args()) == 0 {
+      return errors.New("Must run a process with the secret")
+    }
     // c.Args() contains [script, to, run]
     RunScript(config, c.Args())
     return nil
