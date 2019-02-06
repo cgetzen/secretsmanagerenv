@@ -1,43 +1,46 @@
-package main
+package cmd
 
 import (
 	"os"
-  "log"
-  "github.com/urfave/cli"
+  "github.com/cgetzen/secretsmanagerenv/cmd/handler"
   "errors"
+	"github.com/spf13/cobra"
+  "fmt"
 )
 
-func main() {
-  var config Config
-	app := cli.NewApp()
+var (
+  secrets []string
+  region string
+)
 
-  app.Flags = []cli.Flag {
-    cli.StringFlag{
-      Name:        "secret, s",
-      Usage:       "Secrets Manager entry",
-      Destination: &config.secret_path,
-    },
-    cli.StringFlag{
-      Name:        "region, r",
-      Usage:       "AWS region",
-      Destination: &config.region,
-    },
-  }
-
-  app.Action = func(c *cli.Context) error {
-    if len(config.secret_path) == 0 {
+var rootCmd = &cobra.Command{
+	Use:   "smenv",
+	Short: "B",
+	Long: "C",
+  Args: func(cmd *cobra.Command, args []string) error {
+    if len(args) == 0 {
+      return errors.New("requires at least one arg")
+    }
+    if len(secrets) == 0 {
       return errors.New("Must specify secret with `-s`")
     }
-    if len(c.Args()) == 0 {
-      return errors.New("Must run a process with the secret")
-    }
-    // c.Args() contains [script, to, run]
-    RunScript(config, c.Args())
     return nil
-  }
+  },
+	Run: func(_ *cobra.Command, args []string) {
+    if err := handler.RunCommandWithSecret(secrets, region, args); err != nil {
+      fmt.Println(err.Error())
+    }
+  },
+}
 
-  err := app.Run(os.Args)
-  if err != nil {
-    log.Fatal(err)
+func Execute() {
+  if err := rootCmd.Execute(); err != nil {
+    fmt.Println(err)
+    os.Exit(1)
   }
+}
+
+func init() {
+  rootCmd.PersistentFlags().StringSliceVarP(&secrets, "secret", "s", []string{}, "name of secret")
+	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "", "region")
 }
