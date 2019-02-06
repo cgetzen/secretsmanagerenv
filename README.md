@@ -9,5 +9,5 @@ Smenv is built around the concept of [twelve factor apps](https://12factor.net/c
 
 ## Usage
 ```bash
-smenv -s rails_secrets/prod rails s -b 0.0.0.0
+smenv -s rails_secrets/prod -s hello_world_secret -r us-east-1 "rails s -b 0.0.0.0"
 ```
